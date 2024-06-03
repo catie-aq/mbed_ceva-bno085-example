@@ -13,11 +13,14 @@ static DigitalOut led1(LED1);
 
 int main()
 {
-    BNO085 BNO085(I2C1_SDA, I2C1_SCL, 0x4B);
+    printf("\n\n\n\n=======================Init=============================\n\n\n\n");
+    I2C i2c(I2C1_SDA, I2C1_SCL);
+    BNO085 bno085(&i2c, 0x4B);
+    bno085.initialize();
     while (true) {
         led1 = !led1;
         if (led1) {
-            printf("Alive!\n");
+            // printf("Alive!\n");
         }
         ThisThread::sleep_for(HALF_PERIOD);
     }
