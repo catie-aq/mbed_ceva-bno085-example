@@ -27,17 +27,17 @@ int main()
     I2C i2c(I2C1_SDA, I2C1_SCL);
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
-    bno085.enable_gyro(50);
+    bno085.enable_magnetometer(50);
     ThisThread::sleep_for(1000ms);
     while (true) {
         if (data_available) {
             data_available = false;
             bno085.get_readings();
-            float x = bno085.get_gyro_x();
-            float y = bno085.get_gyro_y();
-            float z = bno085.get_gyro_z();
-
-            printf("x : %f\t y : %f\t z : %f\n", x, y, z);
+            float x = bno085.get_mag_x();
+            float y = bno085.get_mag_y();
+            float z = bno085.get_mag_z();
+            uint8_t accuracy = bno085.get_mag_accuracy();
+            printf("x : %fuT\t y : %fuT\t z : %fuT\t z : %d\n", x, y, z, accuracy);
             ThisThread::sleep_for(25ms);
         }
     }
