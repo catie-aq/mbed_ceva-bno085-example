@@ -27,17 +27,24 @@ int main()
     I2C i2c(I2C1_SDA, I2C1_SCL);
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
-    bno085.enable_linear_accelerometer(50);
+    bno085.enable_rotation_vector(50);
     ThisThread::sleep_for(1000ms);
     while (true) {
         if (data_available) {
             data_available = false;
             bno085.get_readings();
-            float accx = bno085.get_lin_accelX();
-            float accy = bno085.get_lin_accelY();
-            float accz = bno085.get_lin_accelZ();
-            uint8_t lin_accuracy = bno085.get_lin_accel_accuracy();
-            printf("x : %f\t ,y : %f\t, z : %f\t, Accuracy : %u\n", accx, accy, accz, lin_accuracy);
+            float quat_i = bno085.get_quat_i();
+            float quat_j = bno085.get_quat_j();
+            float quat_k = bno085.get_quat_k();
+            float quat_real = bno085.get_quat_real();
+            float quat_radian_accuracy = bno085.get_quat_radian_accuracy();
+            printf("Quat i : \t%f\tQuat j : \t%f\tQuat k : \t%f\tQuat real : \t%f\tQuat radian "
+                   "accuracy : \t%f\n ",
+                    quat_i,
+                    quat_j,
+                    quat_k,
+                    quat_real,
+                    quat_radian_accuracy);
             ThisThread::sleep_for(25ms);
         }
     }
