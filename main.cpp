@@ -10,18 +10,35 @@ namespace {
 }
 
 static DigitalOut led1(LED1);
+static InterruptIn wake_up(WKUP);
+bool data_available = false;
+
+void flip()
+{
+    led1 = !led1;
+    data_available = true;
+}
 
 int main()
 {
     printf("\n\n\n\n=======================Init=============================\n\n\n\n");
+    wake_up.fall(flip);
+
     I2C i2c(I2C1_SDA, I2C1_SCL);
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
+    bno085.enable_accelerometer(50);
+    ThisThread::sleep_for(1000ms);
     while (true) {
-        led1 = !led1;
-        if (led1) {
-            // printf("Alive!\n");
+        if (data_available) {
+            data_available = false;
+            bno085.get_readings();
+            float accx = bno085.get_accelX();
+            float accy = bno085.get_accelY();
+            float accz = bno085.get_accelZ();
+            uint8_t lin_accuracy = bno085.get_accel_accuracy();
+            printf("x : %f\t ,y : %f\t, z : %f\t, Accuracy : %u\n", accx, accy, accz, lin_accuracy);
+            ThisThread::sleep_for(25ms);
         }
-        ThisThread::sleep_for(HALF_PERIOD);
     }
 }

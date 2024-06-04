@@ -1,29 +1,30 @@
-# mbed_ceva-bno085
-Mbed OS driver for 9 axis CEVA BNO085
+# mbed_ceva-bno085-example
+Mbed OS example for 9 axis CEVA BNO085
 
 ## Requirements
 ### Hardware requirements
 The following boards are required:
-- *List mbed_ceva-bno085 hardware requirements here*
+- *List mbed_ceva-bno085-example hardware requirements here*
 
 ### Software requirements
-mbed_ceva-bno085 makes use of the following libraries (automatically
+mbed_ceva-bno085-example makes use of the following libraries (automatically
 imported by `mbed deploy` or `mbed import`):
-- *List mbed_ceva-bno085 software requirements here*
+- *List mbed_ceva-bno085-example software requirements here*
 
 ## Usage
 To clone **and** deploy the project in one command, use `mbed import` and skip to the
 target enabling instructions:
 ```shell
-mbed import https://github.com/catie-aq/mbed-ceva-bno085.git mbed-ceva-bno085
+mbed import https://github.com/catie-aq/mbed-ceva-bno085-example.git
+mbed-ceva-bno085
 ```
 
 Alternatively:
 
-- Clone to "mbed-ceva-bno085" and enter it:
+- Clone to "mbed-ceva-bno085-example" and enter it:
   ```shell
-  git clone https://github.com/catie-aq/mbed-ceva-bno085.git mbed-ceva-bno085
-  cd mbed-ceva-bno085
+  git clone https://github.com/catie-aq/mbed-ceva-bno085-example.git mbed-ceva-bno085
+  cd mbed-ceva-bno085-example
   ```
 
 - Deploy software requirements with:
@@ -44,7 +45,7 @@ mbed compile
 Program the target device with a Segger J-Link debug probe and
 [`sixtron_flash`](https://github.com/catie-aq/6tron_flash) tool:
 ```shell
-sixtron_flash stm32l4a6rg BUILD/ZEST_CORE_STM32L4A6RG/GCC_ARM/mbed-ceva-bno085.elf
+sixtron_flash stm32l4a6rg BUILD/ZEST_CORE_STM32L4A6RG/GCC_ARM/mbed-ceva-bno085-example.elf
 ```
 
 Debug on the target device with the probe and Segger
