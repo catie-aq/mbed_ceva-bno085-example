@@ -4,6 +4,7 @@
  */
 #include "bno085.h"
 #include "mbed.h"
+const float pi = 3.14159265359;
 
 namespace {
 #define HALF_PERIOD 500ms
@@ -28,20 +29,15 @@ int main()
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
     wake_up.fall(flipe);
-    bno085.enable_gravity(50);
+    bno085.enable_rotation_vector(50);
     ThisThread::sleep_for(5000ms);
     while (true) {
         if (data_available) {
             if (bno085.get_readings()) {
-                float gravityX = bno085.get_gravity_x();
-                float gravityY = bno085.get_gravity_y();
-                float gravityZ = bno085.get_gravity_z();
-                float gravityAccuracy = bno085.get_gravity_accuracy();
-                printf("Gravity X : %f\tGravity Y : %f\tGravity Z : %f\tAccuracy :%f\n",
-                        gravityX,
-                        gravityY,
-                        gravityZ,
-                        gravityAccuracy);
+                float pitch = bno085.get_pitch() * 180 / pi;
+                float roll = bno085.get_roll() * 180 / pi;
+                float yaw = bno085.get_yaw() * 180 / pi;
+                printf("Pitch : %f\tRoll : %f\tYaw: %f\n", pitch, roll, yaw);
             } else {
                 ThisThread::sleep_for(1ms);
             }
