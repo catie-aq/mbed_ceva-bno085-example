@@ -28,40 +28,33 @@ int main()
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
     wake_up.fall(flipe);
-    bno085.enable_stability_classifier(5000);
-    bno085.calibrate_gyro();
-    printf("Stability Classifier enable");
+    uint8_t activity_confidences[9];
+    uint32_t enable_activities = 0xF1;
+    bno085.enable_activity_classifier(500, enable_activities, activity_confidences);
     ThisThread::sleep_for(5000ms);
     while (true) {
         if (data_available) {
-            bno085.get_readings();
-            data_available -= 2;
-            switch (bno085.get_stability_classifier()) {
-                case 0:
-                    printf("Unknown classification\n");
-                    break;
-                case 1:
-                    printf("On table\n");
-                    break;
-                case 2:
-                    printf("Stationary\n");
-                    break;
-                case 3:
-                    printf("Stable\n");
-                    break;
-                case 4:
-                    printf("Motion\n");
-                    break;
-                case 5:
-                    printf("[Reserved]\n");
-                    break;
-
-                default:
-                    ThisThread::sleep_for(1ms);
-                    break;
+            if (bno085.get_readings()) {
+                uint8_t activity_number = bno085.get_activity_classifier();
+                if (activity_number == 0)
+                    printf("Unknown\n");
+                else if (activity_number == 1)
+                    printf("In vehicle\n");
+                else if (activity_number == 2)
+                    printf("On bicycle\n");
+                else if (activity_number == 3)
+                    printf("On foot\n");
+                else if (activity_number == 4)
+                    printf("Still\n");
+                else if (activity_number == 5)
+                    printf("Tilting\n");
+                else if (activity_number == 6)
+                    printf("Walking\n");
+                else if (activity_number == 7)
+                    printf("Running\n");
+                else if (activity_number == 8)
+                    printf("On stairs\n");
             }
-        } else {
-            ThisThread::sleep_for(1ms);
         }
     }
 }
