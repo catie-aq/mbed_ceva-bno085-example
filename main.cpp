@@ -28,33 +28,32 @@ int main()
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
     wake_up.fall(flipe);
-    uint8_t activity_confidences[9];
-    uint32_t enable_activities = 0xF1;
-    bno085.enable_activity_classifier(500, enable_activities, activity_confidences);
+    bno085.enable_gyro_integrated_rotation_vector(50);
     ThisThread::sleep_for(5000ms);
     while (true) {
         if (data_available) {
             if (bno085.get_readings()) {
-                uint8_t activity_number = bno085.get_activity_classifier();
-                if (activity_number == 0)
-                    printf("Unknown\n");
-                else if (activity_number == 1)
-                    printf("In vehicle\n");
-                else if (activity_number == 2)
-                    printf("On bicycle\n");
-                else if (activity_number == 3)
-                    printf("On foot\n");
-                else if (activity_number == 4)
-                    printf("Still\n");
-                else if (activity_number == 5)
-                    printf("Tilting\n");
-                else if (activity_number == 6)
-                    printf("Walking\n");
-                else if (activity_number == 7)
-                    printf("Running\n");
-                else if (activity_number == 8)
-                    printf("On stairs\n");
+                float quatI = bno085.get_quat_i();
+                float quatJ = bno085.get_quat_j();
+                float quatK = bno085.get_quat_k();
+                float quatReal = bno085.get_quat_real();
+                float gyroX = bno085.get_fast_gyro_x();
+                float gyroY = bno085.get_fast_gyro_y();
+                float gyroZ = bno085.get_fast_gyro_z();
+
+                printf("Quat I : %f\tQuat J : %f\tQuat K : %f\tQuatReal : %f\tGyro X: %f\tGyro Y : "
+                       "%f\tGyro Z : %f\n",
+                        quatI,
+                        quatJ,
+                        quatK,
+                        quatReal,
+                        gyroX,
+                        gyroY,
+                        gyroZ);
             }
+
+        } else {
+            ThisThread::sleep_for(1ms);
         }
     }
 }
