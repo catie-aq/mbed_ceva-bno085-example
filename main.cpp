@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2024, CATIE
  * SPDX-License-Identifier: Apache-2.0
@@ -10,6 +9,17 @@ namespace {
 #define HALF_PERIOD 500ms
 }
 
+static DigitalOut led1(LED1);
+static InterruptIn wake_up(WKUP);
+bool data_available = false;
+bool state = true;
+
+void flipe()
+{
+    led1 = !led1;
+    data_available++;
+}
+
 int main()
 {
     printf("\n\n\n\n=======================Init=============================\n\n\n\n");
@@ -17,25 +27,40 @@ int main()
     I2C i2c(I2C1_SDA, I2C1_SCL);
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
-    bno085.enable_accelerometer(10);
-
-    ThisThread::sleep_for(1000ms);
+    wake_up.fall(flipe);
+    bno085.enable_stability_classifier(5000);
+    bno085.calibrate_gyro();
+    printf("Stability Classifier enable");
+    ThisThread::sleep_for(5000ms);
     while (true) {
-        if (bno085.get_readings() != 0) {
-            // uint16_t report_id = bno085.get_readings();
-            // data_available = data_available - 2;
-            float accx = bno085.get_accelX();
-            float accy = bno085.get_accelY();
-            float accz = bno085.get_accelZ();
-            uint8_t lin_accuracy = bno085.get_accel_accuracy();
-            printf("[] x : %f\t ,y : %f\t, z : %f\t, Accuracy : %u\n",
-                    accx,
-                    accy,
-                    accz,
-                    lin_accuracy);
+        if (data_available) {
+            bno085.get_readings();
+            data_available -= 2;
+            switch (bno085.get_stability_classifier()) {
+                case 0:
+                    printf("Unknown classification\n");
+                    break;
+                case 1:
+                    printf("On table\n");
+                    break;
+                case 2:
+                    printf("Stationary\n");
+                    break;
+                case 3:
+                    printf("Stable\n");
+                    break;
+                case 4:
+                    printf("Motion\n");
+                    break;
+                case 5:
+                    printf("[Reserved]\n");
+                    break;
+
+                default:
+                    ThisThread::sleep_for(1ms);
+                    break;
+            }
         } else {
-            // printf("Test\n");
-            // data_available = 0;
             ThisThread::sleep_for(1ms);
         }
     }
