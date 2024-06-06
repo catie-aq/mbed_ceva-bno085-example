@@ -28,32 +28,23 @@ int main()
     BNO085 bno085(&i2c, 0x4B);
     bno085.initialize();
     wake_up.fall(flipe);
-    bno085.enable_gyro_integrated_rotation_vector(50);
+    bno085.enable_gravity(50);
     ThisThread::sleep_for(5000ms);
     while (true) {
         if (data_available) {
             if (bno085.get_readings()) {
-                float quatI = bno085.get_quat_i();
-                float quatJ = bno085.get_quat_j();
-                float quatK = bno085.get_quat_k();
-                float quatReal = bno085.get_quat_real();
-                float gyroX = bno085.get_fast_gyro_x();
-                float gyroY = bno085.get_fast_gyro_y();
-                float gyroZ = bno085.get_fast_gyro_z();
-
-                printf("Quat I : %f\tQuat J : %f\tQuat K : %f\tQuatReal : %f\tGyro X: %f\tGyro Y : "
-                       "%f\tGyro Z : %f\n",
-                        quatI,
-                        quatJ,
-                        quatK,
-                        quatReal,
-                        gyroX,
-                        gyroY,
-                        gyroZ);
+                float gravityX = bno085.get_gravity_x();
+                float gravityY = bno085.get_gravity_y();
+                float gravityZ = bno085.get_gravity_z();
+                float gravityAccuracy = bno085.get_gravity_accuracy();
+                printf("Gravity X : %f\tGravity Y : %f\tGravity Z : %f\tAccuracy :%f\n",
+                        gravityX,
+                        gravityY,
+                        gravityZ,
+                        gravityAccuracy);
+            } else {
+                ThisThread::sleep_for(1ms);
             }
-
-        } else {
-            ThisThread::sleep_for(1ms);
         }
     }
 }
