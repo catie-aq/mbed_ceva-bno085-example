@@ -34,10 +34,18 @@ int main()
     while (true) {
         if (data_available) {
             if (bno085.get_readings()) {
-                float pitch = bno085.get_pitch() * 180 / pi;
-                float roll = bno085.get_roll() * 180 / pi;
-                float yaw = bno085.get_yaw() * 180 / pi;
-                printf("Pitch : %f\tRoll : %f\tYaw: %f\n", pitch, roll, yaw);
+                unsigned long time_stamp = bno085.get_time_stamp();
+                float QuatI = bno085.get_quat_i();
+                float QuatJ = bno085.get_quat_j();
+                float QuatK = bno085.get_quat_k();
+                float QuatReal = bno085.get_quat_real();
+
+                printf("[%u]Pitch : %f\tRoll : %f\tYaw: %f\n",
+                        time_stamp,
+                        QuatI,
+                        QuatJ,
+                        QuatK,
+                        QuatReal);
             } else {
                 ThisThread::sleep_for(1ms);
             }
