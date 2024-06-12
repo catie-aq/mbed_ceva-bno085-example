@@ -319,17 +319,11 @@ void bno085_soft_reset()
     bno085.soft_reset();
 }
 
-void bno_initialize()
-{
-    bno085.initialize();
-}
-
 int32_t _do_led(int32_t argc, char **argv)
 {
     if (strcmp(argv[1], "on") == 0) {
         led = 1;
     } else if (strcmp(argv[1], "off") == 0) {
-        queue.call(bno_initialize);
         led = 0;
     } else {
         char *str = "on to trun on or off to turn off\n";
