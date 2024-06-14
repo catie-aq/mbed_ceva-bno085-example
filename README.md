@@ -66,7 +66,7 @@ Alternatively:
   mbed deploy
   ```
 
-Enable the custom target:
+Enable the custom [target](https://github.com/catie-aq/mbed_zest-core-stm32l4a6rg):
 ```shell
 cp zest-core-stm32l4a6rg/custom_targets.json .
 ```
