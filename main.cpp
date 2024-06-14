@@ -23,13 +23,6 @@ static DigitalOut led1(LED1);
 bool state1 = true;
 uint8_t tare_counter = 0;
 
-void bno085_accelerometer_on(int time_between_report)
-{
-    bno085.enable_accelerometer(time_between_report);
-    const char *str = "Accelerometer enable\n";
-    serial_port.write(str, strlen(str));
-}
-
 void bno_accelerometer_data()
 {
     bno085.enable_accelerometer(5);
@@ -562,10 +555,8 @@ int32_t _get_tare_rotation_vector_data(int32_t argc, char **argv)
 void shell_output(const char *str, lwshell_t *lw)
 {
     serial_port.write(str, strlen(str));
-    // printf("%s", str);
     if (*str == '\r') {
         serial_port.write("\n", 1);
-        // printf("\n");
     }
 }
 
@@ -575,7 +566,6 @@ void on_rx_interrupt()
 
     if (serial_port.read(&c, 1)) {
         lwshell_input(&c, 1);
-        // queue.call(printf, "%d\n", c);
     }
 }
 
