@@ -272,7 +272,7 @@ void bno_tare_rotation_vector_data()
     while (state) {
         if (bno085.get_available_data()) {
             if (bno085.get_readings()) {
-                tare_counter++; 
+                tare_counter++; // each 50ms increments tare_counter
                 unsigned long time_stamp = bno085.get_time_stamp();
                 float QuatI = bno085.get_quat_i() * 180 / pi;
                 float QuatJ = bno085.get_quat_j() * 180 / pi;
