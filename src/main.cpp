@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bno085/bno085/bno085.h"
+#include "bno085.h"
 #include "lwshell/lwshell.h"
 #include "lwshell_opts.h"
 #include "mbed.h"
