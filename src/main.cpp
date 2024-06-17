@@ -751,10 +751,8 @@ int32_t _get_tare_rotation_vector_data(int32_t argc, char **argv)
 void shell_output(const char *str, lwshell_t *lw)
 {
     serial_port.write(str, strlen(str));
-    // printf("%s", str);
     if (*str == '\r') {
         serial_port.write("\n", 1);
-        // printf("\n");
     }
 }
 
@@ -802,7 +800,6 @@ void on_rx_interrupt()
 
     if (serial_port.read(&c, 1)) {
         lwshell_input(&c, 1);
-        // queue.call(printf, "%d\n", c);
         if (c == 42) {
             queue.call(bno_init);
             queue.call(print_demo_menu);
