@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bno085.h"
+#include "bno085/bno085/bno085.h"
 #include "lwshell/lwshell.h"
 #include "lwshell_opts.h"
 #include "mbed.h"
 // Blinking rate in milliseconds
 #define BLINKING_RATE 500ms
-
+#define SENSOR_IDREPORT_PRY                                                                        \
+    50 // Create ID REPORT to handle Demo of Quaternion and Pitch Roll Yaw (they have the same
+       // sensor REPORT ID)
 static DigitalOut led(LED1);
 
 static UnbufferedSerial serial_port(CONSOLE_TX, CONSOLE_RX);
@@ -174,7 +176,7 @@ void display_values(
             serial_port.write(stra5, strlen(stra5));
             break;
         }
-        case 50: {
+        case SENSOR_IDREPORT_PRY: {
             string texta1 = "[" + timestamp + "]";
             string texta2 = "\t\tyaw x : \t" + new_x;
             string texta3 = "\t\tpitch y : \t" + new_y;
@@ -443,7 +445,7 @@ void bno_angles_y_p_r_data()
             float yaw = bno085.get_yaw() * 180 / pi;
             string timestamp = to_string(bno085.get_time_stamp());
             string accuracy = to_string(bno085.get_gravity_accuracy());
-            display_values(50, pitch, roll, yaw, 0.000, timestamp, "N/A");
+            display_values(SENSOR_IDREPORT_PRY, pitch, roll, yaw, 0.000, timestamp, "N/A");
         }
     }
 }
@@ -459,7 +461,7 @@ void bno_timestamp_data()
             float yaw = bno085.get_yaw() * 180 / pi;
             string timestamp = to_string(bno085.get_time_stamp());
             string accuracy = to_string(bno085.get_gravity_accuracy());
-            display_values(50, pitch, roll, yaw, 0.000, timestamp, "N/A");
+            display_values(SENSOR_IDREPORT_PRY, pitch, roll, yaw, 0.000, timestamp, "N/A");
         }
     }
 }
@@ -477,7 +479,7 @@ void bno_tare_rotation_vector_data()
             float QuatK = bno085.get_quat_k() * 180 / pi;
             float QuatReal = bno085.get_quat_real();
             string timestamp = to_string(bno085.get_time_stamp());
-            display_values(50, QuatI, QuatJ, QuatK, QuatReal, timestamp, "N/A");
+            display_values(SENSOR_IDREPORT_PRY, QuatI, QuatJ, QuatK, QuatReal, timestamp, "N/A");
             if (tare_counter > 200) {
                 tare_counter = 0;
                 if (state1) {
@@ -764,34 +766,10 @@ void bno_init()
 void print_demo_menu()
 {
     state = false;
-    char *str1 = "\n\n\n\nBNO085 test application, choose a demo :\n";
-    char *str2 = "1. accelerometer\n";
-    char *str3 = "2. linear_accelerometer\n";
-    char *str4 = "3. gyroscope\n";
-    char *str5 = "4. rotation Vector\n";
-    char *str6 = "5. magnetometer\n";
-    char *str7 = "6. step_counter\n";
-    char *str8 = "7. calibration\n";
-    char *str9 = "8. activity_classifier\n";
-    char *str10 = "9. fast_gyroscope\n";
-    char *str11 = "10. gravity\n";
-    char *str12 = "11. angles_y_p_r\n";
-    char *str13 = "12. timestamp\n";
-    char *str14 = "13. tare_rotation_vector\n";
-    serial_port.write(str1, strlen(str1));
-    serial_port.write(str2, strlen(str2));
-    serial_port.write(str3, strlen(str3));
-    serial_port.write(str4, strlen(str4));
-    serial_port.write(str5, strlen(str5));
-    serial_port.write(str6, strlen(str6));
-    serial_port.write(str7, strlen(str7));
-    serial_port.write(str8, strlen(str8));
-    serial_port.write(str9, strlen(str9));
-    serial_port.write(str10, strlen(str10));
-    serial_port.write(str11, strlen(str11));
-    serial_port.write(str12, strlen(str12));
-    serial_port.write(str13, strlen(str13));
-    serial_port.write(str14, strlen(str14));
+    printf("\n\n\n\nBNO085 test application, choose a demo :\n1. accelerometer\n2. "
+           "linear_accelerometer\n3. gyroscope\n4. rotation Vector\n5. magnetometer\n6. "
+           "step_counter\n7. calibration\n8. activity_classifier\n9. fast_gyroscope\n10. "
+           "gravity\n11. angles_y_p_r\n12. timestamp\n13. tare_rotation_vector\n");
 }
 
 void on_rx_interrupt()
@@ -800,11 +778,6 @@ void on_rx_interrupt()
 
     if (serial_port.read(&c, 1)) {
         lwshell_input(&c, 1);
-        if (c == 42) {
-            queue.call(bno_init);
-            queue.call(print_demo_menu);
-            state = false;
-        }
     }
 }
 
@@ -866,7 +839,6 @@ int main(void)
     printf("2. linear_accelerometer\n");
     printf("3. gyroscope\n");
     printf("4. rotation Vector\n");
-
     printf("5. magnetometer\n");
     printf("6. step_counter\n");
     printf("7. calibration\n");
