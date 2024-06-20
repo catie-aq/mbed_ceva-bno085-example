@@ -9,7 +9,9 @@
 #include "mbed.h"
 // Blinking rate in milliseconds
 #define BLINKING_RATE 500ms
-
+#define SENSOR_REPORTID_YPR                                                                        \
+    50 // Create ID REPORT to handle Demo of Quaternion and Pitch Roll Yaw (they have the same
+       // sensor REPORT ID)
 static DigitalOut led(LED1);
 
 static UnbufferedSerial serial_port(CONSOLE_TX, CONSOLE_RX);
@@ -23,21 +25,102 @@ static DigitalOut led1(LED1);
 bool state1 = true;
 uint8_t tare_counter = 0;
 
+void display_values(
+        int sensor_id, float x, float y, float z, float real, uint32_t timestamp, string accuracy)
+{
+    switch (sensor_id) {
+        case SENSOR_REPORTID_ACCELEROMETER: {
+            printf("[%u] accel x : %f\t accel y : %f\t accel z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_ROTATION_VECTOR: {
+            printf("[%u] \t Rotation Quat x : %f\t Rotation Quat x : %f\t Rotation Quat x : "
+                   "%f\t Rotation Quat x : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    real,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_LINEAR_ACCELERATION: {
+            printf("[%u] accel x : %f\t accel y : %f\t accel z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_GYROSCOPE: {
+            printf("[%u] gyro x : %f\t gyro y : %f\t gyro z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_GYRO_INTEGRATED_ROTATION_VECTOR: {
+            printf("[%u] Fgyro x : %f\t Fgyro y : %f\t Fgyro z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_MAGNETIC_FIELD: {
+            printf("[%u] Mag x : %f\t Mag y : %f\t Mag z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_GRAVITY: {
+            printf("[%u] Gravity x : %f\t Gravity y : %f\t Gravity z : %f\t [%s]\n",
+                    timestamp,
+                    x,
+                    y,
+                    z,
+                    accuracy.c_str());
+            break;
+        }
+        case SENSOR_REPORTID_YPR: {
+            printf("[%u] Yaw : %f\t pitch : %f\t Roll: %f\t[%s]\n",
+                    timestamp,
+                    z,
+                    y,
+                    x,
+                    accuracy.c_str());
+            break;
+        }
+    }
+}
+
 void bno_accelerometer_data()
 {
     bno085.enable_accelerometer(5);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
             uint8_t IdReport = bno085.get_readings();
-            float x_acc = bno085.get_accel_x();
-            float y_acc = bno085.get_accel_y();
-            float z_acc = bno085.get_accel_z();
-            printf("[%02X] accel x :\t%f\taccel y :\t%f\t accel  :\t%f\n",
-                    IdReport,
-                    x_acc,
-                    y_acc,
-                    z_acc);
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_accel_accuracy());
+            display_values(IdReport,
+                    bno085.get_accel_x(),
+                    bno085.get_accel_y(),
+                    bno085.get_accel_z(),
+                    0.000,
+                    timestamp,
+                    accuracy);
         } else {
             ThisThread::sleep_for(1ms);
         }
@@ -49,12 +132,16 @@ void bno_linear_accelerometer_data()
     bno085.enable_linear_accelerometer(5);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float accx = bno085.get_lin_accel_x();
-            float accy = bno085.get_lin_accel_y();
-            float accz = bno085.get_lin_accel_z();
-            uint8_t lin_accuracy = bno085.get_lin_accel_accuracy();
-            printf("x : %f\t ,y : %f\t, z : %f\t, Accuracy : %u\n", accx, accy, accz, lin_accuracy);
+            uint8_t IdReport = bno085.get_readings();
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_accel_accuracy());
+            display_values(IdReport,
+                    bno085.get_accel_x(),
+                    bno085.get_accel_y(),
+                    bno085.get_accel_z(),
+                    0.000,
+                    timestamp,
+                    accuracy);
         }
     }
 }
@@ -64,19 +151,14 @@ void bno_rotation_vector_data()
     bno085.enable_rotation_vector(50);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float quat_i = bno085.get_quat_i();
-            float quat_j = bno085.get_quat_j();
-            float quat_k = bno085.get_quat_k();
-            float quat_real = bno085.get_quat_real();
-            float quat_radian_accuracy = bno085.get_quat_radian_accuracy();
-            printf("Quat i : \t%f\tQuat j : \t%f\tQuat k : \t%f\tQuat real : \t%f\tQuat radian "
-                   "accuracy : \t%f\n ",
-                    quat_i,
-                    quat_j,
-                    quat_k,
-                    quat_real,
-                    quat_radian_accuracy);
+            uint8_t ID_report = bno085.get_readings();
+            display_values(ID_report,
+                    bno085.get_quat_i(),
+                    bno085.get_quat_j(),
+                    bno085.get_quat_k(),
+                    bno085.get_quat_real(),
+                    bno085.get_time_stamp(),
+                    to_string(bno085.get_quat_radian_accuracy()));
         }
     }
 }
@@ -86,11 +168,16 @@ void bno_gyroscope_data()
     bno085.enable_gyro(50);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float x = bno085.get_gyro_x();
-            float y = bno085.get_gyro_y();
-            float z = bno085.get_gyro_z();
-            printf("x : %f\t y : %f\t z : %f\n", x, y, z);
+            uint8_t IdReport = bno085.get_readings();
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_gyro_accuracy());
+            display_values(IdReport,
+                    bno085.get_gyro_x(),
+                    bno085.get_gyro_y(),
+                    bno085.get_gyro_y(),
+                    0.000,
+                    timestamp,
+                    accuracy);
         }
     }
 }
@@ -100,12 +187,16 @@ void bno_magnetometer_data()
     bno085.enable_magnetometer(50);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float x = bno085.get_mag_x();
-            float y = bno085.get_mag_y();
-            float z = bno085.get_mag_z();
-            uint8_t accuracy = bno085.get_mag_accuracy();
-            printf("x : %fuT\t y : %fuT\t z : %fuT\t z : %d\n", x, y, z, accuracy);
+            uint8_t IdReport = bno085.get_readings();
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_mag_accuracy());
+            display_values(IdReport,
+                    bno085.get_mag_x(),
+                    bno085.get_mag_y(),
+                    bno085.get_mag_z(),
+                    0.000,
+                    timestamp,
+                    accuracy);
         }
     }
 }
@@ -117,7 +208,7 @@ void bno_step_counter_data()
         if (bno085.get_available_data()) {
             bno085.get_readings();
             uint16_t steps = bno085.get_step_count();
-            printf("Steps : %u\n", steps);
+            printf("Steps : %u", steps);
         }
     }
 }
@@ -130,25 +221,30 @@ void bno_calibration_data()
         if (bno085.get_available_data()) {
             bno085.get_readings();
             switch (bno085.get_stability_classifier()) {
-                case 0:
+                case 0: {
                     printf("Unknown classification\n");
                     break;
-                case 1:
+                }
+                case 1: {
                     printf("On table\n");
                     break;
-                case 2:
+                } break;
+                case 2: {
                     printf("Stationary\n");
                     break;
-                case 3:
+                } break;
+                case 3: {
                     printf("Stable\n");
                     break;
-                case 4:
+                } break;
+                case 4: {
                     printf("Motion\n");
                     break;
-                case 5:
-                    printf("[Reserved]\n");
+                } break;
+                case 5: {
+                    printf("Reserved\n");
                     break;
-
+                } break;
                 default:
                     ThisThread::sleep_for(1ms);
                     break;
@@ -161,6 +257,7 @@ void bno_activity_classifier_data()
 {
     uint8_t activity_confidences[9];
     uint32_t enable_activities = 0xF1;
+    string activity;
     bno085.enable_activity_classifier(500, enable_activities, activity_confidences);
     while (state) {
         if (bno085.get_available_data()) {
@@ -194,24 +291,14 @@ void bno_fast_gyroscope_data()
     bno085.enable_gyro_integrated_rotation_vector(50);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float quatI = bno085.get_quat_i();
-            float quatJ = bno085.get_quat_j();
-            float quatK = bno085.get_quat_k();
-            float quatReal = bno085.get_quat_real();
-            float gyroX = bno085.get_fast_gyro_x();
-            float gyroY = bno085.get_fast_gyro_y();
-            float gyroZ = bno085.get_fast_gyro_z();
-
-            printf("Quat I : %f\tQuat J : %f\tQuat K : %f\tQuatReal : %f\tGyro X: %f\tGyro Y : "
-                   "%f\tGyro Z : %f\n",
-                    quatI,
-                    quatJ,
-                    quatK,
-                    quatReal,
-                    gyroX,
-                    gyroY,
-                    gyroZ);
+            uint8_t IdReport = bno085.get_readings();
+            display_values(IdReport,
+                    bno085.get_fast_gyro_x(),
+                    bno085.get_fast_gyro_y(),
+                    bno085.get_fast_gyro_z(),
+                    0.000,
+                    0,
+                    "N/A");
         }
     }
 }
@@ -221,16 +308,16 @@ void bno_gravity_data()
     bno085.enable_gravity(50);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
-            float gravityX = bno085.get_gravity_x();
-            float gravityY = bno085.get_gravity_y();
-            float gravityZ = bno085.get_gravity_z();
-            float gravityAccuracy = bno085.get_gravity_accuracy();
-            printf("Gravity X : %f\tGravity Y : %f\tGravity Z : %f\tAccuracy :%f\n",
-                    gravityX,
-                    gravityY,
-                    gravityZ,
-                    gravityAccuracy);
+            uint8_t IdReport = bno085.get_readings();
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_gravity_accuracy());
+            display_values(IdReport,
+                    bno085.get_gravity_x(),
+                    bno085.get_gravity_y(),
+                    bno085.get_gravity_z(),
+                    0.000,
+                    timestamp,
+                    accuracy);
         }
     }
 }
@@ -240,12 +327,13 @@ void bno_angles_y_p_r_data()
     bno085.enable_rotation_vector(50);
     while (state) {
         if (bno085.get_available_data()) {
-            if (bno085.get_readings()) {
-                float pitch = bno085.get_pitch() * 180 / pi;
-                float roll = bno085.get_roll() * 180 / pi;
-                float yaw = bno085.get_yaw() * 180 / pi;
-                printf("Pitch : %f\tRoll : %f\tYaw: %f\n", pitch, roll, yaw);
-            }
+            uint8_t IdReport = bno085.get_readings();
+            float pitch = bno085.get_pitch() * 180 / pi;
+            float roll = bno085.get_roll() * 180 / pi;
+            float yaw = bno085.get_yaw() * 180 / pi;
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_quat_radian_accuracy());
+            display_values(SENSOR_REPORTID_YPR, pitch, roll, yaw, 0.000, timestamp, accuracy);
         }
     }
 }
@@ -255,53 +343,49 @@ void bno_timestamp_data()
     bno085.enable_rotation_vector(50);
     while (state) {
         if (bno085.get_available_data()) {
-            if (bno085.get_readings()) {
-                unsigned long time_stamp = bno085.get_time_stamp();
-                float pitch = bno085.get_pitch() * 180 / pi;
-                float roll = bno085.get_roll() * 180 / pi;
-                float yaw = bno085.get_yaw() * 180 / pi;
-                printf("[%u] Pitch : %f\tRoll : %f\tYaw: %f\n", time_stamp, pitch, roll, yaw);
-            }
+            uint8_t IdReport = bno085.get_readings();
+            float pitch = bno085.get_pitch() * 180 / pi;
+            float roll = bno085.get_roll() * 180 / pi;
+            float yaw = bno085.get_yaw() * 180 / pi;
+            uint32_t timestamp = bno085.get_time_stamp();
+            string accuracy = to_string(bno085.get_quat_radian_accuracy());
+            display_values(SENSOR_REPORTID_YPR, pitch, roll, yaw, 0.000, timestamp, accuracy);
         }
     }
 }
 
 void bno_tare_rotation_vector_data()
 {
+    string tarestr;
     bno085.enable_rotation_vector(50);
     while (state) {
         if (bno085.get_available_data()) {
-            if (bno085.get_readings()) {
-                tare_counter++; // each 50ms increments tare_counter
-                unsigned long time_stamp = bno085.get_time_stamp();
-                float QuatI = bno085.get_quat_i() * 180 / pi;
-                float QuatJ = bno085.get_quat_j() * 180 / pi;
-                float QuatK = bno085.get_quat_k() * 180 / pi;
-                float QuatReal = bno085.get_quat_real();
+            tare_counter++; // each 50ms increments tare_counter
+            uint8_t IdReport = bno085.get_readings();
+            float QuatI = bno085.get_quat_i() * 180 / pi;
+            float QuatJ = bno085.get_quat_j() * 180 / pi;
+            float QuatK = bno085.get_quat_k() * 180 / pi;
+            float QuatReal = bno085.get_quat_real();
+            string accuracy = to_string(bno085.get_quat_radian_accuracy());
 
-                printf("[%u] Pitch : %f\tRoll : %f\tYaw: %f\n",
-                        time_stamp,
-                        QuatI,
-                        QuatJ,
-                        QuatK,
-                        QuatReal);
-                if (tare_counter > 200) {
-                    tare_counter = 0;
-                    if (state1) {
-                        printf("Tare in progress\n");
-                        led1 = 1;
-                        ThisThread::sleep_for(1000ms);
-                        bno085.tare_now(); // Tare the rotation vector
-                    }
-                    state1 = !state1;
-                    if (state1) {
-                        printf("\nTare Save\n");
-                        bno085.save_tare(); // Save Actual Tare
-                    }
+            uint32_t timestamp = bno085.get_time_stamp();
+            display_values(SENSOR_REPORTID_YPR, QuatI, QuatJ, QuatK, QuatReal, timestamp, accuracy);
+            if (tare_counter > 200) {
+                tare_counter = 0;
+                if (state1) {
+                    printf("Tare in progress\n");
+                    led1 = 1;
+                    ThisThread::sleep_for(1000ms);
+                    bno085.tare_now(); // Tare the rotation vector
                 }
-                if (button.read()) {
-                    bno085.clear_tare(); // return to the initial Tare (not modifiable)
+                state1 = !state1;
+                if (state1) {
+                    printf("\nTare Save\n");
+                    bno085.save_tare(); // Save Actual Tare
                 }
+            }
+            if (button.read()) {
+                bno085.clear_tare(); // return to the initial Tare (not modifiable)
             }
         }
     }
@@ -560,6 +644,31 @@ void shell_output(const char *str, lwshell_t *lw)
     }
 }
 
+void bno_init()
+{
+    bno085.initialize();
+}
+
+void print_demo_menu()
+{
+    state = false;
+    printf("\n\n\n\nBNO085 test application, choose a demo :\n"
+           "1. accelerometer\n"
+           "2. linear accelerometer\n"
+           "3. gyroscope\n"
+           "4. rotation Vector\n"
+           "5. magnetometer\n"
+           "6. step counter\n"
+           "7. calibration classifier\n"
+           "8. activity classifier\n"
+           "9. fast gyroscope\n"
+           "10. gravity\n"
+           "11. angles Yaw Pitch Roll\n"
+           "12. timestamp\n"
+           "13. tare rotation vector\n"
+           "14. Shake detector\n");
+}
+
 void on_rx_interrupt()
 {
     char c;
@@ -622,20 +731,21 @@ int main(void)
     /* User input to process every character */
     printf("Start entering your command and press enter...\r\n");
     bno085.initialize();
-    printf("\n\n\n\nBNO085 test application, choose a demo :\n");
-    printf("1. accelerometer\n");
-    printf("2. linear_accelerometer\n");
-    printf("3. gyroscope\n");
-    printf("4. rotation Vector\n");
-    printf("5. magnetometer\n");
-    printf("6. step_counter\n");
-    printf("7. calibration\n");
-    printf("8. activity_classifier\n");
-    printf("9. fast_gyroscope\n");
-    printf("10. gravity\n");
-    printf("11. angles_y_p_r\n");
-    printf("12. timestamp\n");
-    printf("13. tare_rotation_vector\n");
+    printf("\n\n\n\nBNO085 test application, choose a demo :\n"
+           "1. accelerometer\n"
+           "2. linear accelerometer\n"
+           "3. gyroscope\n"
+           "4. rotation Vector\n"
+           "5. magnetometer\n"
+           "6. step counter\n"
+           "7. calibration classifier\n"
+           "8. activity classifier\n"
+           "9. fast gyroscope\n"
+           "10. gravity\n"
+           "11. angles Yaw Pitch Roll\n"
+           "12. timestamp\n"
+           "13. tare rotation vector\n"
+           "14. Shake detector\n");
 
     serial_port.attach(&on_rx_interrupt, SerialBase::RxIrq);
     queue.dispatch_forever();
