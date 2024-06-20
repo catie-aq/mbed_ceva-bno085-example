@@ -9,7 +9,7 @@
 #include "mbed.h"
 // Blinking rate in milliseconds
 #define BLINKING_RATE 500ms
-#define SENSOR_REPORTID_PRY                                                                        \
+#define SENSOR_REPORTID_YPR                                                                        \
     50 // Create ID REPORT to handle Demo of Quaternion and Pitch Roll Yaw (they have the same
        // sensor REPORT ID)
 static DigitalOut led(LED1);
@@ -30,7 +30,7 @@ void display_values(
 {
     switch (sensor_id) {
         case SENSOR_REPORTID_ACCELEROMETER: {
-            printf("[%u]\t\taccel x : %f\t\t\taccel y : %f\t\t\taccel z : %f\t\t\t[%s]\n",
+            printf("[%u] accel x : %f\t accel y : %f\t accel z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -39,8 +39,8 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_ROTATION_VECTOR: {
-            printf("[%u] \t Rotation Quat x : %f\tRotation Quat x : %f\tRotation Quat x : "
-                   "%f\tRotation Quat x : %f\t[%s]",
+            printf("[%u] \t Rotation Quat x : %f\t Rotation Quat x : %f\t Rotation Quat x : "
+                   "%f\t Rotation Quat x : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -50,7 +50,7 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_LINEAR_ACCELERATION: {
-            printf("[%u]\t\taccel x : %f\t\t\taccel y : %f\t\t\taccel z : %f\t\t\t[%s]\n",
+            printf("[%u] accel x : %f\t accel y : %f\t accel z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -59,7 +59,7 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_GYROSCOPE: {
-            printf("[%u]\t\tgyro x : %f\t\t\tgyro y : %f\t\t\tgyro z : %f\t\t\t[%s]\n",
+            printf("[%u] gyro x : %f\t gyro y : %f\t gyro z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -68,7 +68,7 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_GYRO_INTEGRATED_ROTATION_VECTOR: {
-            printf("[%u]\t\tFgyro x : %f\t\t\tFgyro y : %f\t\t\tFgyro z : %f\t\t\t[%s]\n",
+            printf("[%u] Fgyro x : %f\t Fgyro y : %f\t Fgyro z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -77,7 +77,7 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_MAGNETIC_FIELD: {
-            printf("[%u]\t\tMag x : %f\t\t\tMag y : %f\t\t\tMag z : %f\t\t\t[%s]\n",
+            printf("[%u] Mag x : %f\t Mag y : %f\t Mag z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -86,7 +86,7 @@ void display_values(
             break;
         }
         case SENSOR_REPORTID_GRAVITY: {
-            printf("[%u]\t\tGravity x : %f\t\t\tGravity y : %f\t\t\tGravity z : %f\t\t\t[%s]\n",
+            printf("[%u] Gravity x : %f\t Gravity y : %f\t Gravity z : %f\t [%s]\n",
                     timestamp,
                     x,
                     y,
@@ -94,12 +94,12 @@ void display_values(
                     accuracy.c_str());
             break;
         }
-        case SENSOR_REPORTID_PRY: {
-            printf("[%u]\t\tpitch : %f\t\t\tRoll : %f\t\t\tYaw z : %f\t\t\t[%s]\n",
+        case SENSOR_REPORTID_YPR: {
+            printf("[%u] Yaw : %f\t pitch : %f\t Roll: %f\t[%s]\n",
                     timestamp,
-                    x,
-                    y,
                     z,
+                    y,
+                    x,
                     accuracy.c_str());
             break;
         }
@@ -111,7 +111,6 @@ void bno_accelerometer_data()
     bno085.enable_accelerometer(5);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
             uint8_t IdReport = bno085.get_readings();
             uint32_t timestamp = bno085.get_time_stamp();
             string accuracy = to_string(bno085.get_accel_accuracy());
@@ -133,7 +132,6 @@ void bno_linear_accelerometer_data()
     bno085.enable_linear_accelerometer(5);
     while (state) {
         if (bno085.get_available_data()) {
-            bno085.get_readings();
             uint8_t IdReport = bno085.get_readings();
             uint32_t timestamp = bno085.get_time_stamp();
             string accuracy = to_string(bno085.get_accel_accuracy());
@@ -335,7 +333,7 @@ void bno_angles_y_p_r_data()
             float yaw = bno085.get_yaw() * 180 / pi;
             uint32_t timestamp = bno085.get_time_stamp();
             string accuracy = to_string(bno085.get_quat_radian_accuracy());
-            display_values(SENSOR_REPORTID_PRY, pitch, roll, yaw, 0.000, timestamp, accuracy);
+            display_values(SENSOR_REPORTID_YPR, pitch, roll, yaw, 0.000, timestamp, accuracy);
         }
     }
 }
@@ -351,7 +349,7 @@ void bno_timestamp_data()
             float yaw = bno085.get_yaw() * 180 / pi;
             uint32_t timestamp = bno085.get_time_stamp();
             string accuracy = to_string(bno085.get_quat_radian_accuracy());
-            display_values(SENSOR_REPORTID_PRY, pitch, roll, yaw, 0.000, timestamp, accuracy);
+            display_values(SENSOR_REPORTID_YPR, pitch, roll, yaw, 0.000, timestamp, accuracy);
         }
     }
 }
@@ -371,7 +369,7 @@ void bno_tare_rotation_vector_data()
             string accuracy = to_string(bno085.get_quat_radian_accuracy());
 
             uint32_t timestamp = bno085.get_time_stamp();
-            display_values(SENSOR_REPORTID_PRY, QuatI, QuatJ, QuatK, QuatReal, timestamp, accuracy);
+            display_values(SENSOR_REPORTID_YPR, QuatI, QuatJ, QuatK, QuatReal, timestamp, accuracy);
             if (tare_counter > 200) {
                 tare_counter = 0;
                 if (state1) {
@@ -654,20 +652,21 @@ void bno_init()
 void print_demo_menu()
 {
     state = false;
-    printf("\n\n\n\nBNO085 test application, choose a demo :\n");
-    printf("1. accelerometer\n");
-    printf("2. linear_accelerometer\n");
-    printf("3. gyroscope\n");
-    printf("4. rotation Vector\n");
-    printf("5. magnetometer\n");
-    printf("6. step_counter\n");
-    printf("7. calibration\n");
-    printf("8. activity_classifier\n");
-    printf("9. fast_gyroscope\n");
-    printf("10. gravity\n");
-    printf("11. angles_y_p_r\n");
-    printf("12. timestamp\n");
-    printf("13. tare_rotation_vector\n");
+    printf("\n\n\n\nBNO085 test application, choose a demo :\n"
+           "1. accelerometer\n"
+           "2. linear accelerometer\n"
+           "3. gyroscope\n"
+           "4. rotation Vector\n"
+           "5. magnetometer\n"
+           "6. step counter\n"
+           "7. calibration classifier\n"
+           "8. activity classifier\n"
+           "9. fast gyroscope\n"
+           "10. gravity\n"
+           "11. angles Yaw Pitch Roll\n"
+           "12. timestamp\n"
+           "13. tare rotation vector\n"
+           "14. Shake detector\n");
 }
 
 void on_rx_interrupt()
@@ -732,20 +731,21 @@ int main(void)
     /* User input to process every character */
     printf("Start entering your command and press enter...\r\n");
     bno085.initialize();
-    printf("\n\n\n\nBNO085 test application, choose a demo :\n");
-    printf("1. accelerometer\n");
-    printf("2. linear_accelerometer\n");
-    printf("3. gyroscope\n");
-    printf("4. rotation Vector\n");
-    printf("5. magnetometer\n");
-    printf("6. step_counter\n");
-    printf("7. calibration\n");
-    printf("8. activity_classifier\n");
-    printf("9. fast_gyroscope\n");
-    printf("10. gravity\n");
-    printf("11. angles_y_p_r\n");
-    printf("12. timestamp\n");
-    printf("13. tare_rotation_vector\n");
+    printf("\n\n\n\nBNO085 test application, choose a demo :\n"
+           "1. accelerometer\n"
+           "2. linear accelerometer\n"
+           "3. gyroscope\n"
+           "4. rotation Vector\n"
+           "5. magnetometer\n"
+           "6. step counter\n"
+           "7. calibration classifier\n"
+           "8. activity classifier\n"
+           "9. fast gyroscope\n"
+           "10. gravity\n"
+           "11. angles Yaw Pitch Roll\n"
+           "12. timestamp\n"
+           "13. tare rotation vector\n"
+           "14. Shake detector\n");
 
     serial_port.attach(&on_rx_interrupt, SerialBase::RxIrq);
     queue.dispatch_forever();
